@@ -18,6 +18,8 @@ import {
   Shield
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import jsPDF from 'jspdf';
+import logoImage from '@/assets/mediscan-logo.png';
 
 interface PredictionResult {
   disease: string;
@@ -222,65 +224,191 @@ const PredictionPage = () => {
     }
   };
 
-  const generateAnalysisReport = () => {
+  const generateAnalysisReport = async () => {
     if (!predictionResult) return;
 
+    const pdf = new jsPDF();
     const currentDate = new Date().toLocaleDateString();
-    const reportContent = `
-LUNG X-RAY ANALYSIS REPORT
-Generated on: ${currentDate}
+    const currentTime = new Date().toLocaleTimeString();
+    
+    // Set up colors and fonts
+    const primaryColor: [number, number, number] = [41, 128, 185]; // Professional blue
+    const secondaryColor: [number, number, number] = [52, 73, 94]; // Dark gray
+    const accentColor: [number, number, number] = [39, 174, 96]; // Success green
+    const warningColor: [number, number, number] = [243, 156, 18]; // Warning orange
+    const criticalColor: [number, number, number] = [231, 76, 60]; // Critical red
+    
+    // Helper function to get severity color
+    const getSeverityColorRGB = (severity: string) => {
+      switch (severity) {
+        case 'healthy': return accentColor;
+        case 'warning': return warningColor;
+        case 'critical': return criticalColor;
+        default: return secondaryColor;
+      }
+    };
 
-=====================================
-ANALYSIS SUMMARY
-=====================================
-Disease: ${predictionResult.disease}
-Confidence Score: ${predictionResult.confidence}%
-Severity Level: ${predictionResult.severity.toUpperCase()}
+    try {
+      // Load and add logo
+      const logoImg = new Image();
+      logoImg.crossOrigin = 'anonymous';
+      
+      await new Promise((resolve, reject) => {
+        logoImg.onload = resolve;
+        logoImg.onerror = reject;
+        logoImg.src = logoImage;
+      });
+      
+      // Add logo
+      pdf.addImage(logoImg, 'PNG', 15, 15, 40, 16);
+    } catch (error) {
+      console.log('Logo not loaded, continuing without it');
+    }
 
-=====================================
-RECOMMENDATIONS
-=====================================
-${predictionResult.recommendations.map((rec, index) => `${index + 1}. ${rec}`).join('\n')}
+    // Header section
+    pdf.setFontSize(24);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(...primaryColor);
+    pdf.text('MEDICAL X-RAY ANALYSIS REPORT', 70, 25);
+    
+    // Subtitle
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(...secondaryColor);
+    pdf.text(`Generated on: ${currentDate} at ${currentTime}`, 70, 32);
+    
+    // Draw header line
+    pdf.setDrawColor(...primaryColor);
+    pdf.setLineWidth(0.5);
+    pdf.line(15, 40, 195, 40);
 
-=====================================
-PRECAUTIONS
-=====================================
-${predictionResult.precautions.map((prec, index) => `${index + 1}. ${prec}`).join('\n')}
+    let yPosition = 55;
 
-=====================================
-REMEDIES
-=====================================
-${predictionResult.remedies.map((remedy, index) => `${index + 1}. ${remedy}`).join('\n')}
+    // Patient Info Section (placeholder)
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(...primaryColor);
+    pdf.text('PATIENT INFORMATION', 15, yPosition);
+    
+    yPosition += 10;
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(...secondaryColor);
+    pdf.text('Report ID: ' + Math.random().toString(36).substr(2, 9).toUpperCase(), 15, yPosition);
+    pdf.text('Analysis Type: Chest X-Ray AI Screening', 15, yPosition + 5);
+    
+    yPosition += 20;
 
-=====================================
-TREATMENT PLAN
-=====================================
-${predictionResult.treatment.map((treat, index) => `${index + 1}. ${treat}`).join('\n')}
+    // Analysis Summary Section
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(...primaryColor);
+    pdf.text('ANALYSIS SUMMARY', 15, yPosition);
+    
+    // Summary box
+    const summaryColor = getSeverityColorRGB(predictionResult.severity);
+    pdf.setFillColor(...summaryColor);
+    pdf.setDrawColor(...summaryColor);
+    pdf.roundedRect(15, yPosition + 5, 180, 25, 3, 3, 'F');
+    
+    // Summary text
+    pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(255, 255, 255);
+    pdf.text(`Detected: ${predictionResult.disease}`, 20, yPosition + 15);
+    pdf.setFontSize(12);
+    pdf.text(`Confidence: ${predictionResult.confidence}% | Severity: ${predictionResult.severity.toUpperCase()}`, 20, yPosition + 23);
+    
+    yPosition += 40;
 
-=====================================
-IMPORTANT DISCLAIMER
-=====================================
-This AI analysis is for educational and screening purposes only. 
-Results should not replace professional medical diagnosis. 
-Always consult with qualified healthcare providers for proper 
-medical evaluation and treatment decisions.
+    // Helper function to add section
+    const addSection = (title: string, items: string[], startY: number) => {
+      let currentY = startY;
+      
+      // Check if we need a new page
+      if (currentY > 250) {
+        pdf.addPage();
+        currentY = 20;
+      }
+      
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(...primaryColor);
+      pdf.text(title, 15, currentY);
+      
+      currentY += 8;
+      
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(...secondaryColor);
+      
+      items.forEach((item, index) => {
+        // Check if we need a new page
+        if (currentY > 270) {
+          pdf.addPage();
+          currentY = 20;
+        }
+        
+        const lines = pdf.splitTextToSize(`${index + 1}. ${item}`, 170);
+        lines.forEach((line: string, lineIndex: number) => {
+          if (lineIndex === 0) {
+            // Add bullet point
+            pdf.setFillColor(...primaryColor);
+            pdf.circle(18, currentY - 2, 1, 'F');
+          }
+          pdf.text(line, lineIndex === 0 ? 25 : 25, currentY);
+          currentY += 4;
+        });
+        currentY += 2;
+      });
+      
+      return currentY + 5;
+    };
 
-Report generated by AI X-Ray Analysis System
-    `;
+    // Add all sections
+    yPosition = addSection('RECOMMENDATIONS', predictionResult.recommendations, yPosition);
+    yPosition = addSection('PRECAUTIONS', predictionResult.precautions, yPosition);
+    yPosition = addSection('REMEDIES', predictionResult.remedies, yPosition);
+    yPosition = addSection('TREATMENT PLAN', predictionResult.treatment, yPosition);
 
-    const blob = new Blob([reportContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Lung_Analysis_Report_${predictionResult.disease.replace(/\s+/g, '_')}_${currentDate.replace(/\//g, '-')}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // Add disclaimer box
+    if (yPosition > 220) {
+      pdf.addPage();
+      yPosition = 20;
+    }
+    
+    pdf.setFillColor(255, 243, 205); // Light yellow background
+    pdf.setDrawColor(243, 156, 18); // Orange border
+    pdf.roundedRect(15, yPosition, 180, 35, 3, 3, 'FD');
+    
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(184, 134, 11); // Dark yellow
+    pdf.text('IMPORTANT DISCLAIMER', 20, yPosition + 8);
+    
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(120, 53, 15); // Darker text
+    const disclaimerText = 'This AI analysis is for educational and screening purposes only. Results should not replace professional medical diagnosis. Always consult with qualified healthcare providers for proper medical evaluation and treatment decisions.';
+    const disclaimerLines = pdf.splitTextToSize(disclaimerText, 170);
+    disclaimerLines.forEach((line: string, index: number) => {
+      pdf.text(line, 20, yPosition + 15 + (index * 4));
+    });
+
+    // Footer
+    yPosition += 45;
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'italic');
+    pdf.setTextColor(128, 128, 128);
+    pdf.text('Report generated by MediScan AI X-Ray Analysis System', 15, yPosition);
+    pdf.text(`Generated on ${currentDate} at ${currentTime}`, 15, yPosition + 4);
+
+    // Save the PDF
+    const fileName = `MediScan_Analysis_Report_${predictionResult.disease.replace(/\s+/g, '_')}_${currentDate.replace(/\//g, '-')}.pdf`;
+    pdf.save(fileName);
 
     toast({
-      title: "Report Downloaded",
-      description: "Analysis report has been saved to your device",
+      title: "PDF Report Downloaded",
+      description: "Professional analysis report has been saved to your device",
     });
   };
 

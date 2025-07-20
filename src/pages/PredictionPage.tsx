@@ -12,7 +12,10 @@ import {
   Info,
   Download,
   RotateCcw,
-  Brain
+  Brain,
+  Sparkles,
+  Zap,
+  Shield
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -165,22 +168,26 @@ const PredictionPage = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
+        {/* Enhanced Header */}
         <div className="text-center mb-12 animate-fade-in">
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            AI X-Ray Analysis
-          </h1>
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <Sparkles className="h-6 w-6 text-accent animate-pulse" />
+            <h1 className="text-4xl md:text-5xl font-bold gradient-text">
+              AI X-Ray Analysis
+            </h1>
+            <Sparkles className="h-6 w-6 text-accent animate-pulse" />
+          </div>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Upload your lung X-ray image for AI-powered analysis and disease prediction.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Upload Section */}
-          <Card className="animate-slide-up">
+          {/* Enhanced Upload Section */}
+          <Card className="animate-slide-up glass">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <FileImage className="mr-2 h-5 w-5" />
+                <FileImage className="mr-2 h-5 w-5 text-primary" />
                 Upload X-Ray Image
               </CardTitle>
               <CardDescription>
@@ -188,9 +195,9 @@ const PredictionPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* File Upload Area */}
+              {/* Enhanced File Upload Area */}
               <div
-                className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer"
+                className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary transition-all duration-300 cursor-pointer group hover:shadow-medical-subtle"
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onClick={() => fileInputRef.current?.click()}
@@ -205,19 +212,24 @@ const PredictionPage = () => {
                 
                 {previewUrl ? (
                   <div className="space-y-4">
-                    <img
-                      src={previewUrl}
-                      alt="X-ray preview"
-                      className="max-w-full max-h-64 mx-auto rounded-lg shadow-card"
-                    />
-                    <p className="text-sm text-muted-foreground">
+                    <div className="relative">
+                      <img
+                        src={previewUrl}
+                        alt="X-ray preview"
+                        className="max-w-full max-h-64 mx-auto rounded-xl shadow-elevated"
+                      />
+                      <div className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-lg p-1">
+                        <CheckCircle className="h-4 w-4 text-healthy" />
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground font-medium">
                       {selectedFile?.name}
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center">
-                      <Upload className="h-8 w-8 text-muted-foreground" />
+                    <div className="mx-auto w-20 h-20 bg-gradient-medical-subtle rounded-2xl flex items-center justify-center group-hover:scale-110 transition-all duration-300">
+                      <Upload className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
                     <div>
                       <p className="text-lg font-medium text-foreground">
@@ -231,12 +243,12 @@ const PredictionPage = () => {
                 )}
               </div>
 
-              {/* Action Buttons */}
+              {/* Enhanced Action Buttons */}
               <div className="flex gap-4">
                 <Button
                   onClick={simulateAnalysis}
                   disabled={!selectedFile || isAnalyzing}
-                  className="flex-1"
+                  className="flex-1 shadow-elevated hover:shadow-float transition-all duration-300"
                   variant="medical"
                 >
                   {isAnalyzing ? (
@@ -257,6 +269,7 @@ const PredictionPage = () => {
                     onClick={resetAnalysis}
                     variant="outline"
                     disabled={isAnalyzing}
+                    className="shadow-card hover:shadow-elevated transition-all duration-300"
                   >
                     <RotateCcw className="mr-2 h-4 w-4" />
                     Reset
@@ -264,24 +277,28 @@ const PredictionPage = () => {
                 )}
               </div>
 
-              {/* Analysis Progress */}
+              {/* Enhanced Analysis Progress */}
               {isAnalyzing && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
+                <div className="space-y-3 p-4 bg-gradient-medical-subtle rounded-xl">
+                  <div className="flex justify-between text-sm font-medium">
                     <span>Analysis Progress</span>
-                    <span>{analysisProgress}%</span>
+                    <span className="text-primary">{analysisProgress}%</span>
                   </div>
-                  <Progress value={analysisProgress} className="h-2" />
+                  <Progress value={analysisProgress} className="h-3" />
+                  <div className="flex items-center justify-center space-x-2 text-xs text-muted-foreground">
+                    <Zap className="h-3 w-3 animate-pulse" />
+                    <span>AI processing your X-ray...</span>
+                  </div>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Results Section */}
-          <Card className="animate-slide-up">
+          {/* Enhanced Results Section */}
+          <Card className="animate-slide-up glass">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Brain className="mr-2 h-5 w-5" />
+                <Brain className="mr-2 h-5 w-5 text-accent" />
                 Analysis Results
               </CardTitle>
               <CardDescription>
@@ -291,63 +308,66 @@ const PredictionPage = () => {
             <CardContent>
               {predictionResult ? (
                 <div className="space-y-6">
-                  {/* Prediction Result */}
+                  {/* Enhanced Prediction Result */}
                   <div className="text-center space-y-4">
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <h3 className="text-2xl font-bold text-foreground">
                         {predictionResult.disease}
                       </h3>
                       <Badge 
-                        className={`${getSeverityColor(predictionResult.severity)} text-sm px-3 py-1`}
+                        className={`${getSeverityColor(predictionResult.severity)} text-sm px-4 py-1 shadow-card`}
                       >
                         {getSeverityIcon(predictionResult.severity)}
-                        <span className="ml-1 capitalize">{predictionResult.severity}</span>
+                        <span className="ml-1 capitalize font-medium">{predictionResult.severity}</span>
                       </Badge>
                     </div>
                     
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">Confidence Score</p>
+                    <div className="space-y-3 p-4 bg-gradient-medical-subtle rounded-xl">
+                      <p className="text-sm text-muted-foreground font-medium">Confidence Score</p>
                       <div className="text-3xl font-bold text-primary">
                         {predictionResult.confidence}%
                       </div>
-                      <Progress value={predictionResult.confidence} className="h-2" />
+                      <Progress value={predictionResult.confidence} className="h-3" />
                     </div>
                   </div>
 
-                  {/* Recommendations */}
+                  {/* Enhanced Recommendations */}
                   <div className="space-y-3">
-                    <h4 className="font-medium text-foreground">Recommendations</h4>
-                    <ul className="space-y-2">
+                    <h4 className="font-semibold text-foreground flex items-center">
+                      <Shield className="mr-2 h-4 w-4 text-accent" />
+                      Recommendations
+                    </h4>
+                    <ul className="space-y-3">
                       {predictionResult.recommendations.map((rec, index) => (
-                        <li key={index} className="flex items-start space-x-2 text-sm">
-                          <span className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0" />
-                          <span className="text-muted-foreground">{rec}</span>
+                        <li key={index} className="flex items-start space-x-3 text-sm p-3 bg-muted/50 rounded-lg">
+                          <span className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
+                          <span className="text-muted-foreground leading-relaxed">{rec}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1">
+                  {/* Enhanced Action Buttons */}
+                  <div className="flex gap-3">
+                    <Button variant="outline" size="sm" className="flex-1 shadow-card hover:shadow-elevated transition-all duration-300">
                       <Download className="mr-2 h-4 w-4" />
                       Download Report
                     </Button>
-                    <Button variant="medical" size="sm" className="flex-1">
+                    <Button variant="medical" size="sm" className="flex-1 shadow-elevated hover:shadow-float transition-all duration-300">
                       View Disease Info
                     </Button>
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-12 space-y-4">
-                  <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center">
-                    <Brain className="h-8 w-8 text-muted-foreground" />
+                <div className="text-center py-12 space-y-6">
+                  <div className="mx-auto w-20 h-20 bg-gradient-medical-subtle rounded-2xl flex items-center justify-center">
+                    <Brain className="h-10 w-10 text-muted-foreground" />
                   </div>
-                  <div>
-                    <h3 className="text-lg font-medium text-foreground mb-2">
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-semibold text-foreground">
                       Ready for Analysis
                     </h3>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground max-w-sm mx-auto">
                       Upload an X-ray image to start AI-powered analysis and get instant results.
                     </p>
                   </div>
@@ -357,14 +377,16 @@ const PredictionPage = () => {
           </Card>
         </div>
 
-        {/* Important Notice */}
-        <Card className="mt-8 animate-fade-in">
-          <CardContent className="py-6">
-            <div className="flex items-start space-x-3">
-              <Info className="h-5 w-5 text-warning mt-0.5 flex-shrink-0" />
-              <div className="space-y-1">
-                <h4 className="font-medium text-foreground">Important Medical Disclaimer</h4>
-                <p className="text-sm text-muted-foreground">
+        {/* Enhanced Important Notice */}
+        <Card className="mt-8 animate-fade-in glass">
+          <CardContent className="py-8">
+            <div className="flex items-start space-x-4">
+              <div className="p-2 bg-warning/20 rounded-lg">
+                <Info className="h-6 w-6 text-warning" />
+              </div>
+              <div className="space-y-2">
+                <h4 className="font-semibold text-foreground">Important Medical Disclaimer</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   This AI analysis is for educational and screening purposes only. Results should not replace professional medical diagnosis. 
                   Always consult with qualified healthcare providers for proper medical evaluation and treatment decisions.
                 </p>
